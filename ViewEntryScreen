@@ -1,0 +1,94 @@
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Date;
+
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+public class ViewEntryScreen extends JPanel implements ActionListener {
+
+	private static final long serialVersionUID = 8058034979780716509L;
+
+	// The variable used by the class constructor to receive the passed journal
+	// entry for viewing
+	private Date entry;
+
+	private JTextArea entryTextArea;
+
+	private JButton deleteEntryButton;
+	private JButton cancelButton;
+
+	private JScrollPane textScrollPane;
+
+	private JPanel buttonPanel;
+
+	public ViewEntryScreen(Date entry) {
+		this.entry = entry;
+	}
+
+	public Component viewEntry() {
+
+		entryTextArea = new JTextArea(Journal.entryListMap.get(entry).getEntry(), 20, 30);
+		entryTextArea.setEditable(false);
+		entryTextArea.setLineWrap(true);
+
+		deleteEntryButton = new JButton("Delete");
+		deleteEntryButton.addActionListener(this);
+		cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(this);
+
+		textScrollPane = new JScrollPane();
+		textScrollPane.add(entryTextArea);
+		textScrollPane.setViewportView(entryTextArea);
+
+		buttonPanel = new JPanel(new GridLayout(2, 0));
+		buttonPanel.add(deleteEntryButton);
+		buttonPanel.add(cancelButton);
+
+		add(textScrollPane, BorderLayout.CENTER);
+		add(buttonPanel, BorderLayout.EAST);
+
+		return this;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+
+		if (e.getSource() == deleteEntryButton) {
+
+			int selectionResult = JOptionPane.showConfirmDialog(null, "Delete selected journal entry?",
+					"Confirm entry deletion", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+			if (selectionResult == 0) {
+
+				Journal.entryListMap.remove(this.entry);
+
+				GoBack();
+
+			}
+
+		}
+
+		if (e.getSource() == cancelButton) {
+
+			GoBack();
+
+		}
+	}
+
+	private void GoBack() {
+
+		this.removeAll();
+		this.add(new MainScreen().mainScreen());
+		this.revalidate();
+		this.repaint();
+
+	}
+
+}
