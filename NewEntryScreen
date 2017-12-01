@@ -1,0 +1,79 @@
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Date;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+public class NewEntryScreen extends JPanel implements ActionListener {
+
+	private static final long serialVersionUID = 8058034979780716509L;
+
+	private JTextArea textEntry;
+
+	private JButton saveEntryButton;
+	private JButton discardEntryButton;
+
+	private JPanel buttonPanel;
+
+	private JScrollPane textScrollPane;
+
+	public Component EntryScreen() {
+
+		textEntry = new JTextArea(20, 30);
+		textEntry.setLineWrap(true);
+
+		saveEntryButton = new JButton("Save Entry");
+		saveEntryButton.addActionListener(this);
+
+		discardEntryButton = new JButton("Discard Entry");
+		discardEntryButton.addActionListener(this);
+
+		textScrollPane = new JScrollPane();
+		textScrollPane.add(textEntry);
+		textScrollPane.setViewportView(textEntry);
+
+		buttonPanel = new JPanel(new GridLayout(2, 0));
+		buttonPanel.add(saveEntryButton);
+		buttonPanel.add(discardEntryButton);
+
+		add(textScrollPane, BorderLayout.CENTER);
+		add(buttonPanel, BorderLayout.EAST);
+
+		return this;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+
+		if (e.getSource() == saveEntryButton) {
+
+			String entry = textEntry.getText();
+			Journal.entryListMap.put(new Date(), new Entry(entry));
+			
+			GoBack();
+
+		}
+
+		if (e.getSource() == discardEntryButton) {
+
+			GoBack();
+
+		}
+	}
+
+	private void GoBack() {
+
+		this.removeAll();
+		this.add(new MainScreen().mainScreen());
+		this.revalidate();
+		this.repaint();
+
+	}
+
+}
