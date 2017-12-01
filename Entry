@@ -1,0 +1,22 @@
+import java.io.Serializable;
+
+public class Entry implements Serializable {
+
+	private static final long serialVersionUID = -8962544478996634350L;
+	
+	private String entry;
+	
+	public Entry(String entry){
+		this.entry = entry;
+	}
+	
+	public String getEntry() {
+		return entry;
+	}
+	public void setEntry(String entry) {
+		this.entry = entry;
+	}
+	
+	
+	
+}
