@@ -1,0 +1,41 @@
+import java.awt.EventQueue;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.Date;
+import java.util.Map;
+
+public class Main {
+
+	public static void main(String[] args) {
+
+		EventQueue.invokeLater(new Runnable() {
+
+			@SuppressWarnings("unchecked")
+			public void run() {
+
+				try (FileInputStream fis = new FileInputStream("journal.save")) {
+
+					ObjectInputStream os = new ObjectInputStream(fis);
+					
+					Journal.entryListMap = (Map<Date, Entry>) os.readObject();
+
+				} catch (FileNotFoundException e) {
+					
+					System.out.println("Save file not found, launching program.");
+
+				} catch (IOException e) {
+
+					System.out.println("Input/output error.");
+
+				} catch (ClassNotFoundException e) {
+				}
+				
+				new MainScreen().CreateAndShowGUI();
+			}
+		});
+
+	}
+
+}
