@@ -1,0 +1,186 @@
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
+public class MainScreen extends JPanel implements ActionListener {
+
+	private static final long serialVersionUID = 1541781079326320593L;
+
+	// JFrame to hold everything
+	// JFrame to handle message dialogs
+	private JFrame mainFrame;
+
+	// Panel containers for holding components
+	private JPanel textListPanel;
+	private JPanel buttonPanel;
+
+	// JScrollPane to scroll journal entries in the JList
+	private JScrollPane textScrollPane;
+
+	// JList for displaying the entries.
+	// DefaultListModel for handling JList data.
+	private JList<Date> journalEntryList;
+	private DefaultListModel<Date> journalModel;
+
+	private JButton newEntryButton;
+	private JButton openEntryButton;
+	private JButton deleteEntryButton;
+
+	// Used for custom code to be executed upon application close
+	// In this case we will be serializing the journal entries
+
+	public Component mainScreen() {
+
+		journalModel = new DefaultListModel<Date>();
+		for (Date key : Journal.entryListMap.keySet()) {
+			journalModel.addElement(key);
+		}
+		journalEntryList = new JList<Date>(journalModel);
+		journalEntryList.setSelectionMode(1);
+
+		newEntryButton = new JButton("New Journal Entry");
+		newEntryButton.addActionListener(this);
+
+		openEntryButton = new JButton("Open Entry");
+		openEntryButton.addActionListener(this);
+
+		deleteEntryButton = new JButton("Delete Entry");
+		deleteEntryButton.addActionListener(this);
+
+		textScrollPane = new JScrollPane();
+		textScrollPane.setMinimumSize(new Dimension(200, 400));
+		textScrollPane.setViewportView(journalEntryList);
+
+		textListPanel = new JPanel();
+		textListPanel.add(textScrollPane);
+
+		buttonPanel = new JPanel(new GridLayout(3, 1));
+		buttonPanel.add(newEntryButton);
+		buttonPanel.add(openEntryButton);
+		buttonPanel.add(deleteEntryButton);
+
+		add(textListPanel, BorderLayout.CENTER);
+		add(buttonPanel, BorderLayout.EAST);
+
+		return this;
+	}
+
+	public void CreateAndShowGUI() {
+
+		mainFrame = new JFrame("Private Journal");
+		mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		mainFrame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent evt) {
+				
+				try (FileOutputStream fos = new FileOutputStream("journal.save")) {
+
+					ObjectOutputStream os = new ObjectOutputStream(fos);
+
+					os.writeObject(Journal.entryListMap);
+
+					System.exit(0);
+
+				} catch (FileNotFoundException a) {
+					System.out.println("File not found.");
+				} catch (IOException b) {
+					b.printStackTrace();
+				}
+			}
+		});
+		mainFrame.setPreferredSize(new Dimension(575, 475));
+		mainFrame.add(mainScreen());
+		mainFrame.pack();
+		mainFrame.setVisible(true);
+
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+
+		if (e.getSource() == newEntryButton) {
+
+			this.removeAll();
+			this.add(new NewEntryScreen().EntryScreen());
+			this.revalidate();
+			this.repaint();
+
+		}
+
+		if (e.getSource() == openEntryButton) {
+			
+			if(journalEntryList.isSelectionEmpty()) {
+				
+				// Nothing!
+				
+			} else {
+				
+				Date entry = journalEntryList.getSelectedValue();
+
+				this.removeAll();
+				this.add(new ViewEntryScreen(entry).viewEntry());
+				this.revalidate();
+				this.repaint();
+				
+			}
+
+		}
+
+		if (e.getSource() == deleteEntryButton) {
+
+			if (!journalEntryList.isSelectionEmpty()) {
+
+				int selectionResult = JOptionPane.showConfirmDialog(null, "Delete selected journal entries?",
+						"Confirm entry deletion", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+				if (selectionResult == 0) {
+
+					int[] selectedEntries = journalEntryList.getSelectedIndices();
+					ArrayList<Integer> selectedEntryList = new ArrayList<Integer>();
+					List<Date> selectedKeys = new ArrayList<Date>(journalEntryList.getSelectedValuesList());
+
+					for (int value : selectedEntries) {
+						selectedEntryList.add(value);
+					}
+
+					Collections.sort(selectedEntryList, Collections.reverseOrder());
+
+					for (int value : selectedEntryList) {
+						journalModel.remove(value);
+					}
+
+					for (Date value : selectedKeys) {
+
+						Journal.entryListMap.remove(value);
+
+					}
+
+				}
+
+			}
+
+		}
+
+	}
+
+}
